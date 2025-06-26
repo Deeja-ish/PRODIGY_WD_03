@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIC-TAC-TOE</title>
+    <style>
+        body{
+            font-family:"";
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: url();
+        }
+
+
+        .game-container{
+            max-width: 400px;
+            border-radius: 10px;
+            background-color: #fff;
+            padding: 30px;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .game-title{
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
+            font-weight: 800;
+            color: #333;
+        }
+        .game-status{
+            font-size: 1.5em;
+            font-weight: 300;
+            margin-bottom: 15px;
+            color: #555;
+        }
+        .game-board{
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            height: 300px;
+            margin: 0 auto 30px auto;
+            overflow: hidden;
+            background-color: #eee;
+            border-radius: 8px;
+        }
+        .cell{
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f9f9f9;
+            font-size: 3.5em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            box-sizing: border-box;
+            color: #4CAF50;
+            border: 2px solid #ccc;
+        }
+
+        /* cell containing o */
+        .cell.O{
+            color: #2196F3;
+        }
+
+        /* When the boxes are hovered over */
+        .cell:hover:not(.X):not(.O){
+            background-color: #e0e0e0;
+        }
+
+        .control-button{
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .btn{
+            padding: 15px 20px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-reset{
+            background-color: #ff6f61;
+            color: #fff;
+        }
+
+        .btn-reset:hover{
+            background-color: #e65c50;
+            transform:translateY(-2px)
+        }
+
+        .btn-mode{
+            background-color: #6a0570;
+            color: #fff;
+        }
+
+        .btn-mode:hover{
+            background-color: #55055b;
+            transform:translateY(-2px)
+        }
+
+        .btn-mode.active{
+            background-color: #8e24aa;
+            cursor: default;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        @media (max-width: 480px) {
+            .game-container {
+                padding: 20px;
+            }
+            .game-title {
+                font-size: 2em;
+            }
+            .game-status {
+                font-size: 1.2em;
+            }
+            .game-board {
+                width: 270px;
+                height: 270px;
+            }
+            .cell {
+                width: 90px;
+                height: 90px;
+                font-size: 3em;
+            }
+            .btn {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h2 class="game-title">TIC-TAC-TOE</h2>
+        <div id="gameStatus" class="game-status"></div>
+
+        <div class="game-board" id="gameBoard">
+            <div class="cell" data-cell-index="0"></div>
+            <div class="cell" data-cell-index="1"></div>
+            <div class="cell" data-cell-index="2"></div>
+            <div class="cell" data-cell-index="3"></div>
+            <div class="cell" data-cell-index="4"></div>
+            <div class="cell" data-cell-index="5"></div>
+            <div class="cell" data-cell-index="6"></div>
+            <div class="cell" data-cell-index="7"></div>
+            <div class="cell" data-cell-index="8"></div>
+        </div>
+
+        <div class="control-button">
+            <button id="resetBtn" class="btn btn-reset">Reset Game</button>
+            <button id="modePvP" class="btn btn-mode active">Player vs Player</button>
+            <button id="modePvAI" class="btn btn-mode">Player vs AI</button>
+        </div>
+    </div>
+</body>
+<script>
+    // DOM Element References
+    const gameBoard = document.getElementById('gameBoard');
+    const cells = document.querySelectorAll('.cell');
+    const gameStatus = document.getElementById('gameStatus');
+    const resetButton = document.getElementById('resetBtn');
+    const player = document.getElementById('modePvP');
+    const ai= document.getElementById('modePvAI');
+
+        // Game State Variables
+    let board = ['', '', '', '', '', '', '', '', ''];
+    let currentPlayer = 'X'; 
+    let isGameStarting = true;
+    let isAIPlaying = false;
+
+    // Defining all possible winning combinations
+    const winningCombinations = [
+        [0, 1, 2], // Top row
+        [3, 4, 5], // Middle row
+        [6, 7, 8], // Bottom row
+        [0, 3, 6], // Left column
+        [1, 4, 7], // Middle column
+        [2, 5, 8], // Right column
+        [0, 4, 8], // Diagonal from top-left
+        [2, 4, 6]  // Diagonal from top-right
+    ];
+
+        
+    const initialiseGame = () => {
+        board = ['', '', '', '', '', '', '', '', '']; // Reset board to empty
+        currentPlayer = 'X'; 
+        isGameStarting = true; 
+        updateStatus(`It's ${currentPlayer}'s turn`); // Update status message
+
+            
+        // Clear text and classes from all cells
+        cells.forEach(cell => {
+          cell.textContent = '';
+          cell.classList.remove('X', 'O');
+        });
+    };
+
+    //  To Update game status message
+    const updateStatus = (message) => {
+        gameStatus.textContent = message;
+    };
+
+        
+    //  Handles a click event on a game cell.
+        
+    const handleClick = (event) => {
+        const clickedCell = event.target;
+        const clickedCellIndex = parseInt(clickedCell.dataset.cellIndex);
+
+        // Check if the cell is already filled or if the game is not active
+        if (board[clickedCellIndex] !== '' || !isGameStarting) {
+            return; 
+        }
+
+        // Place the current player's marker on the board
+        board[clickedCellIndex] = currentPlayer;
+        clickedCell.textContent = currentPlayer; 
+        clickedCell.classList.add(currentPlayer); 
+
+        checkGameResult(); 
+
+        if (isGameStarting && isAIPlaying) {
+            switchPlayer();
+            setTimeout(makeAIMove, 700); // Small delay for AI move 
+        }else if(isGameStarting) {
+            switchPlayer(); 
+        }
+    };
+
+    const checkGameResult = () => {
+        let roundWon = false;
+
+        // Loop through all winning combinations
+        for (let i = 0; i < winningCombinations.length; i++) {
+            const win = winningCombinations[i]; 
+
+            let a = board[win[0]];
+            let b = board[win[1]];
+            let c = board[win[2]];
+
+            // If any cell in the combination is empty, it's not a win yet
+            if (a === '' || b === '' || c === '') {
+                continue; 
+            }
+                // If all three cells in the combination are the same marker, it's a win!
+            if (a === b && b === c) {
+                roundWon = true;
+                break;
+            }
+        }
+
+        if (roundWon) {
+            updateStatus(`${currentPlayer} Wins!`); 
+            isGameStarting = false; 
+            return;
+        }
+
+            
+        // Check for a draw 
+        if (!board.includes('')) { 
+            updateStatus('Game Draw!'); 
+            isGameStarting = false; 
+            return;
+        }
+    };
+
+        
+    //  Switches the current player between 'X' and 'O'.
+
+    const switchPlayer = () => {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        updateStatus(`It's ${currentPlayer}'s turn`);
+    };
+
+        
+    // Makes a move for the AI opponent (simple random move).
+    
+    const makeAIMove = () => {
+        const availableCells = [];
+        for (let i = 0; i < board.length; i++) {
+            if (board[i] === '') {
+                availableCells.push(i);
+            }
+        }
+
+        if (availableCells.length > 0) {
+            const randomIndex = Math.floor(Math.random() * availableCells.length);
+            const cellToClickIndex = availableCells[randomIndex];
+            cells[cellToClickIndex].click(); 
+        }
+    };
+
+
+    // Resets the game board and state.
+
+     const resetGame = () => {
+        initialiseGame();
+    };
+
+       
+    const changeGameMode = (playAI) => {
+        isAIPlaying = playAI;
+        // Update active class on mode buttons for visual feedback
+        if (isAIPlaying) {
+            ai.classList.add('active');
+            player.classList.remove('active');
+        } else {
+            player.classList.add('active');
+            ai.classList.remove('active');
+        }
+        resetGame(); 
+    };
+
+    //  Event Listeners 
+
+    // for cells
+    cells.forEach(cell => {
+        cell.addEventListener('click', handleClick);
+    });
+
+    // for buttons
+    resetButton.addEventListener('click', resetGame);
+    player.addEventListener('click', () => changeGameMode(false));
+    ai.addEventListener('click', () => changeGameMode(true));
+
+    initialiseGame();
+</script>
+</html>
