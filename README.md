@@ -1,5 +1,3 @@
-# PRODIGY_WD_03
-
 # Tic-Tac-Toe Web Application
 This is a simple and interactive Tic-Tac-Toe game implemented entirely using HTML, CSS, and JavaScript. It provides a classic game experience where two players can compete against each other, or a single player can challenge a basic AI opponent, aiming to get three of their markers in a row (horizontally, vertically, or diagonally) to win.
 
